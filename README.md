@@ -78,6 +78,11 @@ spec:
         env:
         - name: LOG_LEVEL
           value: debug
+        # Required as this info is not passed on to the container
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
 ```
 
 Now you can start tailing the logs for the deployed `king-rules` pod:
