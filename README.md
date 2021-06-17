@@ -17,8 +17,8 @@ minutes to become active and accept traffic.
 Instead we re-use the same ingress and just attach new rules as needed.
 
 We assume that each service will respond to its own subdomain (the `host`
-setting in the ingress' rule). Using wildcards at the DNS and LB levels,
-one can expose these services in a fresh subdomain faster.
+setting in the ingress' rule). Using wildcards at the DNS and LB
+certificate levels, one can expose these services in subdomains faster.
 
 I draw inspiration from https://github.com/hxquangnhat/kubernetes-auto-ingress
 but that code creates a new ingress for each seervice every time, which is
