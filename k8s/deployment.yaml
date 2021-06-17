@@ -15,12 +15,10 @@ spec:
       serviceAccountName: king-rules
       containers:
       - name: app
-        image: jpedrob/king-rules:${TAG}
+        image: jpedrob/king-rules:$TAG
         imagePullPolicy: Always
         env:
-        - name: LOG_LEVEL
-          value: debug
-        # Required as this info is not passed on to the container
+        # Required as this is not passed on to the container
         - name: NAMESPACE
           valueFrom:
             fieldRef:

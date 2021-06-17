@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -25,7 +26,6 @@ import (
 var (
 	client           *kubernetes.Clientset
 	namespace        string
-	logLevel         string
 	attachedServices = make(map[string]*attachedService)
 	logLevels        = map[string]log.Level{
 		"debug": log.DebugLevel,
@@ -40,32 +40,33 @@ type attachedService struct {
 	ServiceName string
 	IngressName string
 	Host        string
-	RuleIndex   int
-	PathIndex   int
+	// RuleIndex   int
+	// PathIndex   int
 }
 
 func (attached *attachedService) String() string {
 	return fmt.Sprintf(`
+		Namespace: %s
 		IngressName: %s
 		ServiceName: %s
-		Host: %s
-		RuleIndex: %d
-		PathIndex: %d`,
+		Host: %s`,
+		attached.Namespace,
 		attached.IngressName,
 		attached.ServiceName,
-		attached.Host,
-		attached.RuleIndex,
-		attached.PathIndex)
+		attached.Host)
 }
 
 func main() {
+	log.Info(color.Paint("pale", "OS %s, Arch %s, CPUs %d, GoVersion %s",
+		runtime.GOOS, runtime.GOARCH, runtime.NumCPU(), runtime.Version()))
+
 	var err error
 	var config *rest.Config
 
 	namespace = os.Getenv("NAMESPACE")
-	logLevel = strings.ToLower(os.Getenv("LOG_LEVEL"))
+	logLevel := strings.ToLower(os.Getenv("LOG_LEVEL"))
 	if logLevel == "" {
-		logLevel = "info"
+		logLevel = "debug"
 	}
 	log.SetLevel(logLevels[logLevel])
 	log.Warnf("Started in namespace %s", color.Yellow(namespace))
@@ -98,7 +99,7 @@ func main() {
 		log.Fatal(err.Error())
 		return
 	}
-	log.Infof("Already attached services:\n%v", attachedServices)
+	log.Info(color.Yellow("Attached services: %v", attachedServices))
 
 	// Create a watch to listen for create/update/delete events on service. New
 	// services will be attached if they specify the annotations.
@@ -112,11 +113,12 @@ func main() {
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				service := obj.(*core.Service)
-				log.Infof(color.Green("Service added %s", service.Name))
+				log.Info(color.Green("Service added %s", service.Name))
 				attached := attachedServices[service.Name]
 				if attached != nil {
-					log.Warnf(color.Yellow("Service %s is already attached to ingress %s",
+					log.Warn(color.Yellow("  Service %s host %s is attached to ingress %s",
 						attached.ServiceName,
+						attached.Host,
 						attached.IngressName))
 				} else {
 					attachService(service)
@@ -125,22 +127,44 @@ func main() {
 
 			DeleteFunc: func(obj interface{}) {
 				service := obj.(*core.Service)
-				log.Warnf(color.Yellow("Service deleted %s",
+				log.Warn(color.Yellow("Service deleted %s",
 					service.Name))
 
 				attached := attachedServices[service.Name]
 				if attached != nil {
 					removeService(attached)
 				} else {
-					log.Debugf(color.Gray("Service %s was not attached",
+					log.Debug(color.Gray("  Service %s was not attached",
 						service.Name))
 				}
 			},
 
 			UpdateFunc: func(oldObj, newObj interface{}) {
-				service := newObj.(*core.Service)
-				log.Warnf(color.Yellow("Service updated %s",
-					service.Name))
+				oldService := oldObj.(*core.Service)
+				newService := newObj.(*core.Service)
+
+				log.Warn(color.Yellow("Service updated %s (%s)",
+					oldService.Name,
+					newService.Name))
+
+				oldAttached := attachedServices[oldService.Name]
+				if oldAttached != nil {
+					removeService(oldAttached)
+				} else {
+					log.Debug(color.Gray("  Service %s was not attached",
+						oldService.Name))
+				}
+
+				newAttached := attachedServices[newService.Name]
+				if newAttached != nil {
+					log.Warn(color.Yellow("  Service %s host %s is attached to ingress %s",
+						newAttached.ServiceName,
+						newAttached.Host,
+						newAttached.IngressName))
+				} else {
+					attachService(newService)
+				}
+
 			},
 		},
 	)
@@ -152,75 +176,67 @@ func main() {
 	}
 }
 
-func removeService(attached *attachedService) {
-	log.Infof(color.Yellow("Removing service %s host %s from ingress %s",
-		attached.ServiceName,
-		attached.Host,
-		attached.IngressName))
-
-	removeRule(attached)
-}
-
 func attachService(service *core.Service) {
-	// if service.Name != "echo" {
-	// 	// log.Debugf("Skipping service %s",
-	// 	// 	color.Paint("gray", service.Name))
-	// 	return
-	// }
-
 	name, host := getNameAndHost(service)
 	if name == "" {
-		log.Debugf(color.Gray("  Will not attach service %s",
+		log.Debug(color.Gray("  Will not attach service %s",
 			service.Name))
 		return
 	}
 
 	ingress := getIngress(name, service.Namespace)
 	if ingress == nil {
-		log.Errorf(color.Red("Ingress %s not found",
-			name))
+		log.Error(color.Red("Ingress %s not found", name))
 		return
 	}
 
-	ruleIndex, pathIndex := addRule(ingress, host, service)
-	if ruleIndex > -1 {
+	ok := addRule(ingress, host, service)
+	if ok {
 		attached := attachedService{
 			Namespace:   service.Namespace,
 			ServiceName: service.Name,
 			IngressName: ingress.Name,
 			Host:        host,
-			RuleIndex:   ruleIndex,
-			PathIndex:   pathIndex,
 		}
 		attachedServices[service.Name] = &attached
 	}
 
-	log.Debugf(color.Gray("Attached services %s", attachedServices))
+	log.Debug(color.Gray("Attached services %s", attachedServices))
 }
 
-func removeRule(attached *attachedService) {
+func removeService(attached *attachedService) {
+	log.Info(color.Yellow("Removing service %s host %s from ingress %s ns: %s",
+		attached.ServiceName,
+		attached.Host,
+		attached.IngressName, attached.Namespace))
+
 	ingress := getIngress(attached.IngressName, attached.Namespace)
+	if ingress == nil {
+		log.Error(color.Red("Ingress %s not found", attached.IngressName))
+		return
+	}
+
 	rules := []v1beta1.IngressRule{}
 	for i, rule := range ingress.Spec.Rules {
-		log.Debugf(color.Gray("  Checking rule %d to host: %s...", i, rule.Host))
-
 		if attached.Host != rule.Host {
-			log.Debugf(color.Gray("  Keeping rule %d to host %s", i, rule.Host))
+			log.Debug(color.Gray("  Keeping rule %d (host %s vs %s)",
+				i, rule.Host, attached.Host))
 			rules = append(rules, rule)
 			continue
 		}
 
+		log.Debug(color.Gray("  Checking rule %d to host %s...", i, rule.Host))
 		paths := []v1beta1.HTTPIngressPath{}
 		for j, path := range rule.HTTP.Paths {
 			serviceName := path.Backend.ServiceName
-			log.Debugf(color.Gray("    Checking path %d to service %s", j, serviceName))
+			log.Debug(color.Gray("    Checking path %d to service %s...", j, serviceName))
 
 			if attached.ServiceName == serviceName {
-				log.Debugf(color.Gray("    Ignoring path %d to service %s", j, serviceName))
+				log.Debug(color.Gray("    Ignoring path %d to service %s", j, serviceName))
 				continue
 			}
 
-			log.Debugf(color.Gray("    Appending path %d to service %s", j, serviceName))
+			log.Debug(color.Gray("    Keeping path %d to service %s", j, serviceName))
 			paths = append(paths, path)
 		}
 
@@ -231,8 +247,7 @@ func removeRule(attached *attachedService) {
 	}
 
 	ingress.Spec.Rules = rules
-	log.Debugf(color.Gray("New rules %s", &ingress.Spec.Rules))
-
+	// log.Debug(color.Gray("New rules %s", &ingress.Spec.Rules))
 	updated, err := client.
 		ExtensionsV1beta1().
 		Ingresses(ingress.Namespace).
@@ -242,18 +257,19 @@ func removeRule(attached *attachedService) {
 			v1.UpdateOptions{})
 
 	if err != nil {
-		log.Errorf(color.Red(err.Error()))
+		log.Error(color.Red(err.Error()))
 		return
 	}
 
-	log.Debugf(color.Gray("Updated ingress %s", updated))
-	log.Warnf(color.Yellow("Service %s removed from ingress %s", attached.ServiceName, attached.IngressName))
+	log.Debug(color.Gray("Updated rules count: %d", len(updated.Spec.Rules)))
+	log.Warn(color.Yellow("Service %s removed from ingress %s",
+		attached.ServiceName, attached.IngressName))
 
 	delete(attachedServices, attached.ServiceName)
-	log.Debugf(color.Gray("Attached services %s", attachedServices))
+	log.Debug(color.Yellow("Attached services %s", attachedServices))
 }
 
-func addRule(ingress *v1beta1.Ingress, host string, service *core.Service) (int, int) {
+func addRule(ingress *v1beta1.Ingress, host string, service *core.Service) bool {
 	rule := v1beta1.IngressRule{
 		Host: host,
 		IngressRuleValue: v1beta1.IngressRuleValue{
@@ -272,10 +288,10 @@ func addRule(ingress *v1beta1.Ingress, host string, service *core.Service) (int,
 		},
 	}
 
-	log.Debugf(color.Gray("New paths: %v", rule.IngressRuleValue.HTTP.Paths))
+	// log.Debug(color.Gray("New paths: %v", rule.IngressRuleValue.HTTP.Paths))
 	rule.HTTP.Paths = append(rule.HTTP.Paths, path)
 	ingress.Spec.Rules = append(ingress.Spec.Rules, rule)
-	log.Debugf(color.Gray("New rules: %v", &ingress.Spec.Rules))
+	// log.Debug(color.Gray("New rules: %v", &ingress.Spec.Rules))
 
 	updated, err := client.
 		ExtensionsV1beta1().
@@ -285,30 +301,36 @@ func addRule(ingress *v1beta1.Ingress, host string, service *core.Service) (int,
 			ingress,
 			v1.UpdateOptions{})
 
-	log.Warnf(color.Yellow("Adding service %s host %s to ingress %s...", service.Name, host, ingress.Name))
+	log.Warn(color.Yellow("Adding service %s host %s to ingress %s...", service.Name, host, ingress.Name))
 
 	if err != nil {
-		log.Errorf(color.Red(err.Error()))
-		return -1, -1
+		log.Error(color.Red(err.Error()))
+		return false
 	}
 
-	log.Debugf(color.Gray("Updated: %v", updated))
-	return getRulePathIndex(updated, service)
+	log.Debug(color.Gray("Updated rules count: %d", len(updated.Spec.Rules)))
+	return true
 }
 
 func getIngress(name string, namespace string) *v1beta1.Ingress {
-	log.Debugf(color.Gray("Getting ingress %s in namespace %s...", name, namespace))
+	log.Debug(color.Gray("Getting ingress %s in namespace %s...", name, namespace))
+
+	if namespace == "" {
+		log.Error(color.Red("Namespace %s is empty", namespace))
+		return nil
+	}
+
 	ingress, err := client.
 		ExtensionsV1beta1().
 		Ingresses(namespace).
 		Get(context.TODO(), name, v1.GetOptions{})
 
 	if err != nil {
-		log.Errorf(color.Red("Couldn't find ingress %s: %s", name, err.Error()))
+		log.Error(color.Red("Couldn't find ingress %s: %s", name, err.Error()))
 		return nil
 	}
 
-	log.Debugf(color.Gray("Found ingress: %s", ingress.GetName()))
+	log.Debug(color.Gray("Found ingress: %s", ingress.GetName()))
 
 	return ingress
 }
@@ -320,68 +342,75 @@ func buildAttached() error {
 		List(context.TODO(), v1.ListOptions{})
 
 	if err != nil {
-		log.Fatalf(color.Red("Error loading services: %s.", err))
+		log.Fatal(color.Red("Error loading services: %s.", err))
 		panic(err)
 	}
 
 	for _, service := range services.Items {
-		log.Infof(color.Green("Checking service %s...", service.Name))
+		log.Info(color.Green("Checking service %s...", service.Name))
 		name, host := getNameAndHost(&service)
 		if name == "" {
-			log.Debugf(color.Gray("Skipping service %s: no ingress name", service.Name))
+			log.Debug(color.Gray("  Skipping service %s", service.Name))
 			continue
 		}
 
 		ingress := getIngress(name, service.Namespace)
 		if ingress == nil {
-			log.Warnf(color.Gray("Skipping service %s: ingress %s not found", service.Name, name))
+			log.Warn(color.Yellow("  Skipping service %s: ingress %s not found",
+				service.Name, name))
 			continue
 		}
 
-		ruleIndex, pathIndex := getRulePathIndex(ingress, &service)
-		if ruleIndex > -1 {
-			log.Warnf(color.Yellow("Marking service %s as attached to ingress %s", service.Name, name))
+		count := countAttachments(ingress, &service)
+		if count > 0 {
+			log.Warn(color.Yellow("  Service %s is attached to ingress %s in %d places",
+				service.Name, name, count))
 			attachedServices[service.Name] = &attachedService{
+				Namespace:   service.Namespace,
 				ServiceName: service.Name,
 				IngressName: ingress.Name,
 				Host:        host,
-				RuleIndex:   ruleIndex,
-				PathIndex:   pathIndex,
 			}
 		} else {
-			log.Warnf(color.Yellow("Service %s not attached to ingress %s", service.Name, name))
+			log.Warn(color.Yellow("  Service %s is not attached to ingress %s",
+				service.Name, name))
 		}
 	}
 
 	return nil
 }
 
-func getRulePathIndex(ingress *v1beta1.Ingress, service *core.Service) (int, int) {
-
+func countAttachments(ingress *v1beta1.Ingress, service *core.Service) int {
 	name, host := getNameAndHost(service)
 	if name == "" {
-		return -1, -1
+		return 0
 	}
 
-	log.Debugf(color.Gray("Found annotations name: %s, host: %s", name, host))
-
+	count := 0
 	for i, rule := range ingress.Spec.Rules {
-		log.Debugf(color.Gray("- Checking ingress rule %d, host: %s...", i, rule.Host))
+		log.Debug(color.Gray("  Checking rule %d to host %s...", i, rule.Host))
+
+		if rule.Host != host {
+			log.Debug(color.Gray("  Skipping rule %d (host: %s vs %s)",
+				i, rule.Host, host))
+			continue
+		}
 
 		for j, path := range rule.HTTP.Paths {
-			log.Debugf(color.Gray("  - Checking ingress path %d...", j))
-			log.Debugf(color.Gray("    Backend service: %s", path.Backend.ServiceName))
+			serviceName := path.Backend.ServiceName
+			log.Debug(color.Gray("    Checking path %d to service %s...", j, serviceName))
 
-			if path.Backend.ServiceName == service.Name && rule.Host == host {
-				log.Debugf(color.Yellow("    Service match: %s", service.Name))
-				return i, j
+			if serviceName == service.Name {
+				log.Debug(color.Yellow("    Service found: %s", serviceName))
+				count++
 			}
 		}
 	}
 
-	log.Warnf(color.Yellow("Service %s not found in ingress %s rules", service.Name, ingress.Name))
+	log.Debug(color.Gray("  Service %s in ingress %s: found %d matches",
+		service.Name, ingress.Name, count))
 
-	return -1, -1
+	return count
 }
 
 func getNameAndHost(service *core.Service) (string, string) {
@@ -390,11 +419,11 @@ func getNameAndHost(service *core.Service) (string, string) {
 	enab, foundEnab := service.Annotations["ingress-rules/enabled"]
 
 	if foundName {
-		log.Debugf(color.Gray("  Ingress name: %s", name))
+		log.Debug(color.Gray("  Ingress name: %s", name))
 	}
 
 	if foundHost {
-		log.Debugf(color.Gray("  Ingress host: %s", host))
+		log.Debug(color.Gray("  Ingress host: %s", host))
 	}
 
 	enabledBool := true
@@ -403,9 +432,12 @@ func getNameAndHost(service *core.Service) (string, string) {
 	}
 
 	if !foundName || !foundHost || !enabledBool {
-		log.Debugf(color.Gray("  Failed criteria (enabled: %s, name: %s, host: %s)", enab, name, host))
+		log.Debug(color.Gray("  Failed criteria (enabled: %t, name: %s, host: %s)",
+			enabledBool, name, host))
 		return "", ""
 	}
+
+	log.Debug(color.Gray("  Found annotations name %s host %s", name, host))
 
 	return name, host
 }

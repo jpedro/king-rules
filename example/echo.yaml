@@ -19,3 +19,20 @@ spec:
         env:
         - name: __NUMBER__
           value: "$NUMBER"
+        - name: SHOW_VARS
+          value: "__NUMBER__"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo-$NUMBER
+  annotations:
+    king-rules/name: "ingress-rules"
+    king-rules/host: "echo-$NUMBER.deploy.footway.com"
+spec:
+  type: NodePort
+  selector:
+    app: echo-$NUMBER
+  ports:
+    - port: 80
+      targetPort: 8080

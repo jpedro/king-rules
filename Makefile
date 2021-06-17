@@ -7,9 +7,8 @@ NUMBER ?= 01
 
 .PHONY: test
 test:
-	@echo "==> Building locally"
+	@echo "==> Building and running locally"
 	go build -o $(NAME)
-	@echo "==> Executing the local build"
 	@NAMESPACE=$(shell kubectl config view -o=jsonpath="{.contexts[?(@.name=='$(shell kubectl config current-context)')].context.namespace}") \
 		LOG_LEVEL=debug ./$(NAME) --kube-config ~/.kube/config
 
@@ -22,28 +21,18 @@ build:
 docker: build
 	@echo "==> Building the docker image $(REPO)/$(NAME):$(TAG)"
 	docker build . -t $(NAME)
-	docker tag $(NAME) $(REPO)/$(NAME):$(TAG)
-	docker push $(REPO)/$(NAME):$(TAG)
-
-	@echo "==> Pushing the docker image as latest"
 	docker tag $(NAME) $(REPO)/$(NAME)
+	docker tag $(NAME) $(REPO)/$(NAME):$(TAG)
 	docker push $(REPO)/$(NAME)
+	docker push $(REPO)/$(NAME):$(TAG)
 
 .PHONY: deploy
 deploy: docker
-	@echo "==> Deploying the docker image"
+	@echo "==> Deploying king-rules $(TAG)"
+	envsubst < k8s/rbac.yaml       | kubectl apply -f -
 	envsubst < k8s/deployment.yaml | kubectl apply -f -
-	kubectl get -f k8s/deployment.yaml -o yaml
-
-.PHONY: update
-update:
-	envsubst < k8s/deployment.yaml | kubectl apply -f -
-	kubectl get -f k8s/deployment.yaml -o yaml
 
 .PHONY: number
 number:
-	@echo "==> Deploying number $(NUMBER)"
-	NUMBER=$(NUMBER) envsubst < example/deployment.yaml | kubectl apply -f -
-	NUMBER=$(NUMBER) envsubst < example/deployment.yaml | kubectl get   -f -
-	NUMBER=$(NUMBER) envsubst < example/service.yaml    | kubectl apply -f -
-	NUMBER=$(NUMBER) envsubst < example/service.yaml    | kubectl get   -f -
+	@echo "==> Deploying echo number $(NUMBER)"
+	NUMBER=$(NUMBER) envsubst < example/echo.yaml | kubectl apply -f -
