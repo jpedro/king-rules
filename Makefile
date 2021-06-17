@@ -27,12 +27,17 @@ docker: build
 	docker push $(REPO)/$(NAME):$(TAG)
 
 .PHONY: deploy
-deploy: docker
+deploy: # docker
 	@echo "==> Deploying king-rules $(TAG)"
-	envsubst < k8s/rbac.yaml       | kubectl apply -f -
-	envsubst < k8s/deployment.yaml | kubectl apply -f -
+	TAG=$(TAG) envsubst < k8s/rbac.yaml       | kubectl apply -f -
+	TAG=$(TAG) envsubst < k8s/deployment.yaml | kubectl apply -f -
 
 .PHONY: number
 number:
 	@echo "==> Deploying echo number $(NUMBER)"
 	NUMBER=$(NUMBER) envsubst < example/echo.yaml | kubectl apply -f -
+
+.PHONY: okteto
+okteto:
+	@echo "==> Deploying echo number $(NUMBER)"
+	NUMBER=$(NUMBER) envsubst < example/okteto.yaml | kubectl apply -f -

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-$NUMBER
+spec:
+  selector:
+    matchLabels:
+      app: echo-$NUMBER
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: echo-$NUMBER
+    spec:
+      containers:
+      - name: echo
+        image: jpedrob/echo
+        imagePullPolicy: Always
+        env:
+        - name: __NUMBER__
+          value: "$NUMBER"
+        - name: SHOW_VARS
+          value: "__NUMBER__,HOSTNAME"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo-$NUMBER
+  annotations:
+    king-rules/name: "king-rules"
+    king-rules/host: "echo-$NUMBER-jpedro.cloud.okteto.net"
+spec:
+  type: NodePort
+  selector:
+    app: echo-$NUMBER
+  ports:
+    - port: 80
+      targetPort: 8080
