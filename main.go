@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"runtime"
 	"strings"
@@ -46,10 +48,10 @@ type attachedService struct {
 
 func (attached *attachedService) String() string {
 	return fmt.Sprintf(`
-		Namespace: %s
-		IngressName: %s
-		ServiceName: %s
-		Host: %s`,
+		- Namespace: %s
+		- IngressName: %s
+		- ServiceName: %s
+		- Host: %s`,
 		attached.Namespace,
 		attached.IngressName,
 		attached.ServiceName,
@@ -169,11 +171,36 @@ func main() {
 		},
 	)
 
+	go startServer()
+
 	stop := make(chan struct{})
 	go controller.Run(stop)
 	for {
 		time.Sleep(time.Second)
 	}
+}
+
+func startServer() {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	addr := ":" + port
+	if runtime.GOOS == "darwin" {
+		addr = "localhost:" + port
+	}
+
+	http.HandleFunc("/", rootHandler)
+
+	log.Info(fmt.Sprintf("Starting server on %s\n", color.Green("http://"+addr)))
+	log.Fatal(fmt.Sprintf("%s", http.ListenAndServe(addr, nil)))
+}
+
+func rootHandler(res http.ResponseWriter, req *http.Request) {
+	res.Header().Add("Content-Type", "application/json")
+	text, _ := json.MarshalIndent(attachedServices, "", "  ")
+	fmt.Fprintf(res, "%s", text)
 }
 
 func attachService(service *core.Service) {
