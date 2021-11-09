@@ -180,12 +180,16 @@ $ kubectl get ingress common -o yaml
 
 ## Todos
 
+- [ ] Allow multiple or all namespaces
+
+- [ ] Check king-rules service account permissions
+
 - [ ] Support the `networking.k8s.io/v1` apiGroup, not just
       `extensions/v1beta1`.
 
-- [ ] Support for comma-separated hosts in the `king-rules/host`.
+- [ ] Support comma-separated hosts in the `king-rules/host`.
 
-- [ ] Support comma-separated paths in a future `king-rule/path: /xxx`. The
+- [ ] Support comma-separated paths in the `king-rule/path: /xxx`. The
       usage of this setting combined with the host will create a matrix
       `host x path` of `[]HTTPIngressPath`.
 
