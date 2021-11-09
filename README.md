@@ -30,11 +30,11 @@ exactly what we're trying to avoid here.
 You need to specify these 2 annotations in your service:
 
 ```yaml
-king-rules/name: common
+king-rules/name: dominion
 king-rules/host: echo.example.com
 ```
 
-The ingress `common` will get a new rule, with the format:
+The ingress `dominion` will get a new rule, with the format:
 
 ```yaml
   - http:
@@ -160,7 +160,7 @@ metadata:
   labels:
     app: echo
   annotations:
-    king-rules/name: common
+    king-rules/name: dominion
     king-rules/host: echo.example.com
 spec:
   type: NodePort
@@ -175,7 +175,7 @@ spec:
 Check that the new service was attached to a new rule:
 
 ```bash
-$ kubectl get ingress common -o yaml
+$ kubectl get ingress dominion -o yaml
 ```
 
 ## Todos
