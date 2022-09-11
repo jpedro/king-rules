@@ -4,7 +4,8 @@
 
 This dynamically attaches a service to an existing ingress' rules.
 
-`king-rules` is short for Kubernetes Ingress Rules.
+`king-rules` is short for Kubernetes INGress Rules. I'm kidding. I just
+wanna use that Mel Brooks meme!
 
 
 ## Motivation
