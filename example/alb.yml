@@ -7,17 +7,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  # namespace: example
-  name: pedro-2048
+  name: "2048"
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: app-2048
+      app.kubernetes.io/name: "2048"
   replicas: 2
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: app-2048
+        app.kubernetes.io/name: "2048"
     spec:
       containers:
       - image: alexwhen/docker-2048
@@ -29,8 +28,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  # namespace: example-1
-  name: pedro-2048
+  name: 2048
 spec:
   ports:
     - port: 80
@@ -38,15 +36,14 @@ spec:
       protocol: TCP
   type: NodePort
   selector:
-    app.kubernetes.io/name: app-2048
+    app.kubernetes.io/name: "2048"
 
 ---
 # apiVersion: networking.k8s.io/v1
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  # namespace: example
-  name: pedro-2048
+  name: "2048"
   annotations:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
@@ -54,12 +51,11 @@ metadata:
     alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/group.name: example-alb-group
-    # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:eu-west-1:958978240633:certificate/70399d1e-cc6c-4e3a-af76-f7da16ae5183
     alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:eu-west-1:680615559476:certificate/302cd3ac-1119-4b58-9b80-9a97f0e16d17"
     # alb.ingress.kubernetes.io/tags: APPLICATION-NAME=example,CHARGING-COST-CENTER=GDPKNE27219,ENVIRONMENT=DEVELOPMENT,SLA=BRONZE,CMDB_APPLICATION_INSTANCE_ID=INST_2021_3_15_6_32_46_8791001,INVENTORY-COST-CENTER=KNEG372
 spec:
   rules:
-    - host: 2048.deploy.footway.com
+    - host: 2048.kube.jpedro.dev
       http:
         paths:
           - path: /*
@@ -78,7 +74,7 @@ spec:
               #   name: service-2048
               #   port:
               #     number: 80
-              serviceName: service-2048
+              serviceName: "2048"
               servicePort: 80
 
 
@@ -91,22 +87,21 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: pedro-echoserver
-  # namespace: example-2
+  name: echo
 spec:
   selector:
     matchLabels:
-      app: echoserver
+      app: echo
   replicas: 1
   template:
     metadata:
       labels:
-        app: echoserver
+        app: echo
     spec:
       containers:
       - image: gcr.io/google_containers/echoserver:1.4
         imagePullPolicy: Always
-        name: echoserver
+        name: echo
         ports:
         - containerPort: 8080
 ---
@@ -127,7 +122,6 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  # namespace: example-2
   name: echo
   annotations:
     kubernetes.io/ingress.class: alb
