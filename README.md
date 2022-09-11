@@ -98,7 +98,7 @@ updated as services come and go:
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: common
+  name: dominion
   annotations:
     kubernetes.io/ingress.class: "ingress-alb"
     alb.ingress.kubernetes.io/scheme: internal
