@@ -27,7 +27,7 @@ kind: Service
 metadata:
   name: echo-$NUMBER
   annotations:
-    king-rules/name: "ingress-rules"
+    king-rules/name: "king-rules"
     king-rules/host: "echo-$NUMBER.deploy.footway.com"
 spec:
   type: NodePort
