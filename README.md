@@ -2,10 +2,10 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/jpedro/king-rules)](https://goreportcard.com/report/github.com/jpedro/king-rules)
 
-This dynamically attaches a service to an existing ingress' rules.
+Dynamically creates ingress' rules based on service annotations.
 
-`king-rules` is short for Kubernetes INGress Rules. I'm kidding! I just
-wanna use that Mel Brooks meme!
+`king-rules` is short for **K**ubernetes **ING**ress **Rules**. I'm kidding! It's
+just an excuse to use Mel Brooks' meme!
 
 [![It's good to the King](/.github/king.jpeg)](https://www.imdb.com/title/tt0082517/)
 
