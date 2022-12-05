@@ -4,8 +4,10 @@
 
 This dynamically attaches a service to an existing ingress' rules.
 
-`king-rules` is short for Kubernetes INGress Rules. I'm kidding. I just
+`king-rules` is short for Kubernetes INGress Rules. I'm kidding! I just
 wanna use that Mel Brooks meme!
+
+[![It's good to the King](/.github/king.jpeg)](https://www.imdb.com/title/tt0082517/)
 
 
 ## Motivation
@@ -13,7 +15,7 @@ wanna use that Mel Brooks meme!
 This came out of a desire to deploy development branches in kubernetes
 **without** creating a new ingress *all the time*. Creating it normally
 requires time to provision a cloud specific load balancer and that can take
-minutes to become active and accept traffic.
+minutes to become active and accept traffic. And extra costs.
 
 Instead we re-use the same ingress and just attach new rules as needed.
 
@@ -92,7 +94,7 @@ Now you can start tailing the logs for the deployed `king-rules` pod:
 kubectl logs -f $(kubectl get pods -o name -l app=king-rules)
 ```
 
-Now, create the `common` ingress that will hold the rules that will be
+Now, create the `dominion` ingress that will hold the rules that will be
 updated as services come and go:
 
 ```yaml
@@ -190,8 +192,8 @@ $ kubectl get ingress dominion -o yaml
 
 - [ ] Support comma-separated hosts in the `king-rules/host`.
 
-- [ ] Support comma-separated paths in the `king-rule/path: /xxx`. The
-      usage of this setting combined with the host will create a matrix
-      `host x path` of `[]HTTPIngressPath`.
+- [ ] Support comma-separated paths in the `king-rule/path: /xxx`.
 
-[![Good](/.github/king.jpeg)](https://www.imdb.com/title/tt0082517/)
+
+The usage of this last one combined with the host will create a matrix
+`host x path` of `[]HTTPIngressPath`.
