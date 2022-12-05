@@ -4,8 +4,9 @@
 
 Dynamically creates ingress' rules based on service annotations.
 
-`king-rules` is short for **K**ubernetes **ING**ress **Rules**. I'm kidding! It's
-just an excuse to use Mel Brooks' meme!
+`king-rules` is short for **K**ubernetes **ING**ress **Rules**.
+
+I'm kidding! It's just an excuse to use Mel Brooks' meme!
 
 [![It's good to the King](/.github/king.jpeg)](https://www.imdb.com/title/tt0082517/)
 
