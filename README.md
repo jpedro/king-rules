@@ -13,9 +13,9 @@ wanna use that Mel Brooks meme!
 ## Motivation
 
 This came out of a desire to deploy development branches in kubernetes
-**without** creating a new ingress *all the time*. Creating it normally
-requires time to provision a cloud specific load balancer and that can take
-minutes to become active and accept traffic. And extra costs.
+**WITHOUT** creating a new ingress *ALL THE TIME*. Creating it requires
+time to provision a cloud specific load balancer and that can take minutes
+to become active and accept traffic. And incur in extra costs.
 
 Instead we re-use the same ingress and just attach new rules as needed.
 
@@ -30,14 +30,15 @@ exactly what we're trying to avoid here.
 
 ## Usage
 
-You need to specify these 2 annotations in your service:
+In the minimal usage, you need to specify these 2 annotations in your service:
 
 ```yaml
 king-rules/name: dominion
 king-rules/host: echo.example.com
 ```
 
-The ingress `dominion` will get a new rule, with the format:
+When you deploy this service, the ingress `dominion` will get a new
+rule, with the format:
 
 ```yaml
   - http:
@@ -55,9 +56,7 @@ This simplifies this code and you can provision it exactly the way you need it.
 
 ## Example
 
-### Deploy the executable and the common ingress
-
-First, deploy this `king-rules` code via a deployment:
+### Deploy the king-rules listener
 
 ```yaml
 apiVersion: apps/v1
@@ -125,9 +124,9 @@ spec:
 ```
 
 
-### Deploy your pod and service
+### Deploy your pod(s) and service
 
-Create a deployment for your service:
+Using a deployment:
 
 ```yaml
 apiVersion: apps/v1
@@ -153,7 +152,7 @@ spec:
           value: echo.example.com
 ```
 
-Finally, create the service that uses those 3 annotations:
+Finally, create the service that uses those 2 annotations:
 
 ```yaml
 apiVersion: v1
