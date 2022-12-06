@@ -186,7 +186,7 @@ $ kubectl get ingress dominion -o yaml
 
 ## Todos
 
-- [ ] Allow multiple or all namespaces
+- [ ] Support and scan all services ports
 
 - [ ] Check king-rules service account permissions
 
@@ -198,5 +198,5 @@ $ kubectl get ingress dominion -o yaml
 - [ ] Support comma-separated paths in the `king-rule/path: /xxx`.
 
 
-The usage of this last one combined with the host will create a matrix
-`host x path` of `[]HTTPIngressPath`.
+The combination of host, service ports and paths will create a matrix
+`host x port x path` of `[]HTTPIngressPath`.
