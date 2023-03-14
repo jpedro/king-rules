@@ -2,10 +2,6 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/jpedro/king-rules)](https://goreportcard.com/report/github.com/jpedro/king-rules)
 
-Dynamically creates ingress' rules based on service annotations.
-
-
-## The name
 
 `king-rules` is short for **K**ubernetes **ING**ress **Rules**.
 
@@ -15,6 +11,8 @@ I'm kidding! It's just an excuse to use Mel Brooks' meme!
 
 
 ## Motivation
+
+Dynamically creates ingress' rules based on service annotations.
 
 This came out of a desire to deploy development branches in kubernetes
 **WITHOUT** creating a new ingress *ALL THE TIME*. Creating it requires
