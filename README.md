@@ -2,12 +2,9 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/jpedro/king-rules)](https://goreportcard.com/report/github.com/jpedro/king-rules)
 
+[![It's good to the King](/.github/king.jpeg)](https://www.imdb.com/title/tt0082517/)
 
 `king-rules` is short for **K**ubernetes **ING**ress **Rules**.
-
-I'm kidding! It's just an excuse to use Mel Brooks' meme!
-
-[![It's good to the King](/.github/king.jpeg)](https://www.imdb.com/title/tt0082517/)
 
 
 ## Motivation
