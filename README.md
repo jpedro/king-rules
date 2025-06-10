@@ -13,26 +13,27 @@ Dynamically creates ingress' rules based on service annotations.
 
 This came out of a desire to deploy development branches in kubernetes
 **WITHOUT** creating a new ingress *ALL THE TIME*. Creating it requires
-time to provision a cloud specific load balancer and that can take minutes
-to become active and accept traffic. And incur in extra costs.
+time to provision a cloud specific load balancer and that can take
+minutes to become active and accept traffic. And incur in extra costs.
 
 Instead we re-use the same ingress and just attach new rules as needed.
 
-We assume that each service will respond to its own subdomain (the `host`
-setting in the ingress' rule). Using wildcards at the DNS and LB
+We assume that each service will respond to its own subdomain (the
+`host` setting in the ingress' rule). Using wildcards at the DNS and LB
 certificate levels, one can expose these services in subdomains faster.
 
 I drew inspiration from https://github.com/hxquangnhat/kubernetes-auto-ingress
-but that code creates a new ingress for each seervice every time, which is
-exactly what we're trying to avoid here.
+but that code creates a new ingress for each seervice every time, which
+is exactly what we're trying to avoid here.
 
 
 ## Usage
 
-In the minimal usage, you need to specify these 2 annotations in your service:
+In the minimal usage, you need to specify these 2 annotations in your
+service:
 
 ```yaml
-king-rules/name: dominion
+king-rules/over: dominion
 king-rules/host: echo.example.com
 ```
 

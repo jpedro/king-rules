@@ -21,18 +21,19 @@ spec:
           value: "$NUMBER"
         - name: SHOW_VARS
           value: "__NUMBER__,HOSTNAME"
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: echo-$NUMBER
   annotations:
-    king-rules/name: "king-rules"
+    king-rules/over: "king-rules"
     king-rules/host: "echo-$NUMBER-jpedro.cloud.okteto.net"
 spec:
   type: NodePort
   selector:
     app: echo-$NUMBER
   ports:
-    - port: 80
-      targetPort: 8080
+  - port: 80
+    targetPort: 8080
