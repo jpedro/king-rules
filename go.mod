@@ -1,6 +1,6 @@
 module github.com/jpedro/kubernetes-ingress-rules
 
-go 1.24
+go 1.20
 
 require (
 	github.com/apex/log v1.9.0

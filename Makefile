@@ -1,35 +1,32 @@
 # CGO_ENABLED=0 <-- automatically added when cross compiling
 GOVARS = GOOS=linux GOARCH=amd64
-REPO   ?= jpedrob
+REPO   ?= docker.io/jpedrob
 NAME   ?= king-rules
-TAG    ?= latest
+TAG    ?= v1.0.1
 NUMBER ?= 01
 
 .PHONY: test
 test:
 	@echo "==> Building and running locally"
-	go build -o $(NAME)
+	go build -o /tmp/$(NAME).e
 	@NAMESPACE=$(shell kubectl config view -o=jsonpath="{.contexts[?(@.name=='$(shell kubectl config current-context)')].context.namespace}") \
-		LOG_LEVEL=debug ./$(NAME) --kube-config ~/.kube/config
+		LOG_LEVEL=debug /tmp/$(NAME).e --kube-config ~/.kube/config
 
 .PHONY: build
 build:
-	@echo "==> Building for linux/amd64"
-	$(GOVARS) go build -o $(NAME)
+	@echo "==> Building for linux // amd64"
+	$(GOVARS) go build -o /tmp/$(NAME).e
 
-.PHONY: docker
-docker: build
-	@echo "==> Building the docker image $(REPO)/$(NAME):$(TAG)"
-	docker build . -t $(NAME)
-	docker tag $(NAME) $(REPO)/$(NAME)
-	docker tag $(NAME) $(REPO)/$(NAME):$(TAG)
-	docker push $(REPO)/$(NAME)
-	docker push $(REPO)/$(NAME):$(TAG)
+.PHONY: image
+image: build
+	@echo "==> Building the image $(REPO)/$(NAME):$(TAG)"
+	podman build . -t $(NAME)
+	podman tag $(NAME) $(REPO)/$(NAME):$(TAG)
+	podman push $(REPO)/$(NAME):$(TAG)
 
 .PHONY: deploy
 deploy: # docker
 	@echo "==> Deploying king-rules $(TAG)"
-	TAG=$(TAG) envsubst < k8s/rbac.yaml       | kubectl apply -f -
 	TAG=$(TAG) envsubst < k8s/deployment.yaml | kubectl apply -f -
 
 .PHONY: number
@@ -37,7 +34,7 @@ number:
 	@echo "==> Deploying echo number $(NUMBER)"
 	NUMBER=$(NUMBER) envsubst < example/echo.yaml | kubectl apply -f -
 
-.PHONY: okteto
-okteto:
-	@echo "==> Deploying echo number $(NUMBER)"
-	NUMBER=$(NUMBER) envsubst < example/okteto.yaml | kubectl apply -f -
+# .PHONY: okteto
+# okteto:
+# 	@echo "==> Deploying echo number $(NUMBER)"
+# 	NUMBER=$(NUMBER) envsubst < example/okteto.yaml | kubectl apply -f -
