@@ -6,6 +6,9 @@
 
 `king-rules` is short for **K**ubernetes **ING**ress **Rules**.
 
+> **Note:**
+> This code is old and it shows. Needs a serious refactoring.
+
 
 ## Motivation
 
