@@ -70,7 +70,7 @@ func handleAdd(obj any) {
 	log.Info(color.Green("Service added %s", service.Name))
 	attached := attachedServices[service.Name]
 	if attached != nil {
-		log.Warn(color.Yellow("  Service %s host %s is attached to ingress %s",
+		log.Warn(color.Yellow("Service %s host %s is attached to ingress %s",
 			attached.ServiceName,
 			attached.Host,
 			attached.IngressName))
@@ -88,7 +88,7 @@ func handleDelete(obj any) {
 	} else {
 		log.Debug(
 			color.Gray(
-				"  Service %s was not attached",
+				"Service %s was not attached",
 				svc.Name,
 			),
 		)
@@ -113,7 +113,7 @@ func handleUpdate(oldObj, newObj any) {
 	} else {
 		log.Debug(
 			color.Gray(
-				"  Service %s was not attached",
+				"Service %s was not attached",
 				oldService.Name,
 			),
 		)
@@ -127,7 +127,7 @@ func handleUpdate(oldObj, newObj any) {
 
 	log.Warn(
 		color.Yellow(
-			"  Service %s host %s is attached to ingress %s",
+			"Service %s host %s is attached to ingress %s",
 			newAttached.ServiceName,
 			newAttached.Host,
 			newAttached.IngressName,
@@ -180,7 +180,6 @@ func main() {
 	}
 
 	if err != nil {
-		// log.Fatal(err.Error())
 		panic(err)
 	}
 
@@ -191,7 +190,6 @@ func main() {
 
 	err = buildAttached()
 	if err != nil {
-		// log.Fatal(err.Error())
 		panic(err)
 	}
 
@@ -229,17 +227,18 @@ func startServer() {
 	}
 
 	addr := ":" + port
+	// Switch locally to localhost
 	if runtime.GOOS == "darwin" {
 		addr = "localhost:" + port
 	}
 
-	http.HandleFunc("/", rootHandler)
+	http.HandleFunc("/", handleRoot)
 
 	log.Info(fmt.Sprintf("Starting server on %s\n", color.Green("http://"+addr)))
-	log.Fatal(fmt.Sprintf("%s", http.ListenAndServe(addr, nil)))
+	log.Fatal(fmt.Sprintf("Error: %s", http.ListenAndServe(addr, nil)))
 }
 
-func rootHandler(res http.ResponseWriter, req *http.Request) {
+func handleRoot(res http.ResponseWriter, req *http.Request) {
 	res.Header().Add("Content-Type", "application/json")
 	text, _ := json.MarshalIndent(attachedServices, "", "  ")
 	fmt.Fprintf(res, "%s", text)
@@ -250,7 +249,7 @@ func attachService(service *core.Service) {
 	if annotation == nil || annotation.Over == "" || annotation.Host == "" {
 		log.Debug(
 			color.Gray(
-				"  Will not attach service %s",
+				"Will not attach service %s",
 				service.Name,
 			),
 		)
@@ -448,7 +447,7 @@ func buildAttached() error {
 		if count > 0 {
 			log.Warn(
 				color.Yellow(
-					"  Service %s is attached to ingress %s in %d places",
+					"Service %s is attached to ingress %s in %d places",
 					service.Name,
 					annotation.Over,
 					count,
@@ -463,7 +462,7 @@ func buildAttached() error {
 		} else {
 			log.Warn(
 				color.Yellow(
-					"  Service %s is not attached to ingress %s",
+					"Service %s is not attached to ingress %s",
 					service.Name,
 					annotation.Over,
 				),
@@ -484,7 +483,7 @@ func countAttachments(ingress *extensions.Ingress, service *core.Service) int {
 	for i, rule := range ingress.Spec.Rules {
 		log.Debug(
 			color.Gray(
-				"  Checking rule %d to host %s...",
+				"Checking rule %d to host %s...",
 				i,
 				rule.Host,
 				),
@@ -493,7 +492,7 @@ func countAttachments(ingress *extensions.Ingress, service *core.Service) int {
 		if rule.Host != annotation.Host {
 			log.Debug(
 				color.Gray(
-					"  Skipping rule %d (host: %s vs %s)",
+					"Skipping rule %d (host: %s vs %s)",
 					i,
 					rule.Host,
 					annotation.Host,
@@ -506,7 +505,7 @@ func countAttachments(ingress *extensions.Ingress, service *core.Service) int {
 			serviceName := path.Backend.ServiceName
 			log.Debug(
 				color.Gray(
-					"    Checking path %d to service %s...",
+					"Checking path %d to service %s...",
 					j,
 					serviceName,
 				),
@@ -515,7 +514,7 @@ func countAttachments(ingress *extensions.Ingress, service *core.Service) int {
 			if serviceName == service.Name {
 				log.Debug(
 					color.Yellow(
-						"    Service found: %s",
+						"Service found: %s",
 						serviceName,
 					),
 				)
@@ -526,7 +525,7 @@ func countAttachments(ingress *extensions.Ingress, service *core.Service) int {
 
 	log.Debug(
 		color.Gray(
-			"  Service %s in ingress %s: found %d matches",
+			"Service %s in ingress %s: found %d matches",
 			service.Name,
 			ingress.Name,
 			count,
@@ -557,7 +556,7 @@ func getAnnotation(service *core.Service) *serviceAnnotation {
 	if !foundOver || !foundHost || !enabledBool {
 		log.Debug(
 			color.Gray(
-				"  Failed criteria (enabled: %t, over: %s, host: %s)",
+				"Failed criteria (enabled: %t, over: %s, host: %s)",
 				enabledBool,
 				over,
 				host,
@@ -566,7 +565,7 @@ func getAnnotation(service *core.Service) *serviceAnnotation {
 		return nil
 	}
 
-	log.Debug(color.Gray("  Found annotations over %s, host %s", over, host))
+	log.Debug(color.Gray("Found annotations over %s, host %s", over, host))
 
 	annotation := &serviceAnnotation{}
 	annotation.Over = over
