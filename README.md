@@ -8,7 +8,8 @@ Don't get the wrong idea.
 
 `king-rules` is short for **K**ubernetes **ING**ress **Rules**.
 
-This is a serious E3E, which stands for Enterprise Efficacy Endeavour&trade; Effort.
+This is a serious certified E3E, which stands for Enterprise Efficacy Endeavour&trade;
+Effort.
 
 
 ## Motivation
