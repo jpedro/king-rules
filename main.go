@@ -538,7 +538,7 @@ func countAttachments(ingress *extensions.Ingress, service *core.Service) int {
 func getAnnotation(service *core.Service) *serviceAnnotation {
 	over, foundOver := service.Annotations["king-rules/over"]
 	host, foundHost := service.Annotations["king-rules/host"]
-	enab, foundEnab := service.Annotations["ingress-rules/enabled"]
+	enab, foundEnab := service.Annotations["king-rules/enabled"]
 
 	if foundOver {
 		log.Debug(color.Gray("  Ingress over: %s", over))
