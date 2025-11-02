@@ -6,8 +6,8 @@
 
 Don't get the wrong idea.
 
-`king-rules` is short for **K**ubernetes **ING**ress **Rules**, not some mindless
-useless trolling, just to the use a silly meme.
+`king-rules` is short for **K**ubernetes **ING**ress **Rules**, not a mindless pun
+just to the use a silly meme.
 
 This is a serious certified E3E, which stands for Enterprise Efficacy Endeavour&trade;
 Effort.
