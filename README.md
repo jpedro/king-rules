@@ -162,7 +162,7 @@ metadata:
   labels:
     app: echo
   annotations:
-    king-rules/name: dominion
+    king-rules/over: dominion
     king-rules/host: echo.example.com
 spec:
   type: NodePort
