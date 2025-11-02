@@ -124,7 +124,7 @@ spec:
 ```
 
 
-### Deploy your pod(s) and service
+### Deploy your workloads
 
 Using a deployment:
 
