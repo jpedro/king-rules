@@ -132,7 +132,7 @@ spec:
 ```
 
 
-### Deploy your workloads
+### Deploy your peasant workloads
 
 Using a deployment:
 
