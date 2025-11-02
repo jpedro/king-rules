@@ -56,7 +56,7 @@ This simplifies this code and you can provision it exactly the way you need it.
 
 ## Example
 
-### Deploy the king-rules controller
+### Deploy the controller
 
 ```yaml
 apiVersion: apps/v1
