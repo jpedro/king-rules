@@ -11,8 +11,8 @@
 > `king-rules` is short for **K**ubernetes **ING**ress **Rules**, not a mindless pun
 > just to the use a silly meme.
 > 
-> This is a serious certified E3E, which stands for Enterprise Efficacy
-> Endeavour&trade; Effort.
+> This is a serious certified E3E, which stands for E-tripple-E, which stands for
+> Enterprise Efficacy Endeavour&trade; Effort.
 
 
 ## Motivation
