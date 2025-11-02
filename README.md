@@ -4,7 +4,8 @@
 
 [![It's good to the King](/.github/king.jpeg)](https://www.imdb.com/title/tt0082517/)
 
-`king-rules` is short for **K**ubernetes **ING**ress **Rules**.
+Don't get any ideas. `king-rules` is short for **K**ubernetes **ING**ress **Rules**
+and this is a serious EE (Enterprise Endeavour &trade;).
 
 
 ## Motivation
