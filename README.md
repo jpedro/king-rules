@@ -4,8 +4,11 @@
 
 [![It's good to the King](/.github/king.jpeg)](https://www.imdb.com/title/tt0082517/)
 
-Don't get any ideas. `king-rules` is short for **K**ubernetes **ING**ress **Rules**
-and this is a serious EE (Enterprise Endeavour &trade;).
+Don't get the wrong idea.
+
+`king-rules` is short for **K**ubernetes **ING**ress **Rules**.
+
+This is a serious E3E, which stands for Enterprise Efficacy Endeavour Effort&trade;.
 
 
 ## Motivation
