@@ -182,9 +182,12 @@ $ kubectl get ingress dominion -o yaml
 
 ## Todos
 
-- [ ] Support and scan all services ports
+- [ ] Support cross-namespace ingresses although I'm not 100% convinced
+      this is a great idea.
 
-- [ ] Check king-rules service account permissions
+- [ ] Support and scan all services ports.
+
+- [ ] Set up RBAC permissions.
 
 - [ ] Support the `networking.k8s.io/v1` apiGroup, not just
       `extensions/v1beta1`.
@@ -194,5 +197,7 @@ $ kubectl get ingress dominion -o yaml
 - [ ] Support comma-separated paths in the `king-rule/path: /xxx`.
 
 
+<!--
 The combination of host, service ports and paths will create a matrix
 `host x port x path` of `[]HTTPIngressPath`.
+-->
