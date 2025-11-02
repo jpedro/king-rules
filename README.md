@@ -8,7 +8,7 @@
 > **Note**
 > 
 > Keep in mind that `king-rules` is short for **K**ubernetes **ING**ress **Rules**,
-> not a mindless juvenile pun for a silly meme.
+> not a juvenile pun for a silly meme.
 > 
 > This is a serious certified E3E, which stands for E-tripple-E, which stands for
 > Enterprise Efficacy Endeavour&trade; Effort.
