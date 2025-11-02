@@ -5,7 +5,7 @@
 [![It's good to the King](/.github/king.jpeg)](https://www.imdb.com/title/tt0082517/)
 
 
-> **Note**
+> **Important Clarification:**
 > 
 > Keep in mind that `king-rules` is short for **K**ubernetes **ING**ress **Rules**,
 > not a justification for a juvenile pun of a silly meme.
